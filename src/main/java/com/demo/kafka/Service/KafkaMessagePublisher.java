@@ -11,8 +11,13 @@ public class KafkaMessagePublisher {
     @Autowired
     private KafkaTemplate<String,Object> template;
 
-    public void sendMessageToTopic(String message) {
-        CompletableFuture<SendResult<String, Object>> future =  template.send("sample-topic",message);
+    @Autowired
+    private TopicManagerService topicManagerService;
+
+    public void sendMessageToTopic(String topicName,String message) {
+        topicManagerService.createTopicIfNotExists(topicName,3,(short) 1);
+
+        CompletableFuture<SendResult<String, Object>> future =  template.send(topicName,message);
         future.whenComplete((result,ex) -> {
                 if(ex == null) {
                     System.out.println(message + "With Offset ="+ result.getRecordMetadata().offset());
